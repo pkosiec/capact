@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"projectvoltron.dev/voltron/internal/gateway/requestqueryer"
 	"time"
 
 	"projectvoltron.dev/voltron/internal/gateway/header"
@@ -101,21 +102,36 @@ func introspectGraphQLSchemas(log *zap.Logger, cfg IntrospectionConfig) ([]*grap
 	var schemas []*graphql.RemoteSchema
 	var err error
 
-	err = retry.Do(
-		func() error {
-			schemas, err = graphql.IntrospectRemoteSchemas(cfg.GraphQLEndpoints...)
-			return errors.Wrap(err, "while introspecting schemas")
-		},
-		retry.OnRetry(func(n uint, err error) {
-			log.Debug("Retry attempt", zap.Uint("attempt no", n+1), zap.Error(err))
-		}),
-		retry.Attempts(cfg.Attempts),
-		retry.Delay(cfg.RetryDelay),
-		retry.DelayType(retry.FixedDelay),
-		retry.LastErrorOnly(true),
-	)
-	if err != nil {
-		return nil, errors.Wrap(err, "while introspecting schemas with retry")
+	for _, endpoint := range cfg.GraphQLEndpoints {
+		var schema *graphql.RemoteSchema
+		url := endpoint
+		err = retry.Do(
+			func() error {
+				astSchema, err := graphql.IntrospectAPI(requestqueryer.NewSingleRequestQueryer(url))
+				if err != nil {
+					return errors.Wrapf(err, "while introspecting schema from URL %q", url)
+				}
+
+				schema = &graphql.RemoteSchema{
+					URL:    url,
+					Schema: astSchema,
+				}
+
+				return nil
+			},
+			retry.OnRetry(func(n uint, err error) {
+				log.Debug("Retry attempt", zap.Uint("attempt no", n+1), zap.Error(err))
+			}),
+			retry.Attempts(cfg.Attempts),
+			retry.Delay(cfg.RetryDelay),
+			retry.DelayType(retry.FixedDelay),
+			retry.LastErrorOnly(true),
+		)
+		if err != nil {
+			return nil, errors.Wrapf(err, "while introspecting schema from URL %q with retry", url)
+		}
+
+		schemas = append(schemas, schema)
 	}
 
 	return schemas, nil
