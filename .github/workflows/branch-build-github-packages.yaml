@@ -2,21 +2,6 @@ name: Github Package build
   
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "**.go"
-      - "go.mod"
-      - "go.sum"
-      - "**.graphql"
-      - ".github/workflows/**"
-      - "**.sh"
-      - "Makefile"
-      - "deploy/**"
-      - "!**.md"
-      - "och-content/**"
-      - "Dockerfile"
-    branches:
-      - "github-package"
 
 jobs:
   prepare-matrix:
