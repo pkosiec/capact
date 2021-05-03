@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 2 # To be able to compare with the previous commit and detect changed files
       - name: setup env
-        run: . ./hack/ci/setup-env.sh
+        run: . ./hack/ci/setup-env-nogcp.sh
       - id: set-matrix-app
         run: echo "::set-output ${APPS}"
       - id: set-matrix-test
@@ -44,6 +44,8 @@ jobs:
         uses: docker/setup-buildx-action@v1
       - name: Checkout code
         uses: actions/checkout@v2
+      - name: setup env
+        run: . ./hack/ci/setup-env-nogcp.sh
       - name: Setup Go
         uses: actions/setup-go@v2
         with:

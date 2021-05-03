@@ -3,8 +3,6 @@
 echo "Setting up CI environmental variables for non GCP..."
 export NAME="dev"
 
-# LOAD_BALANCER_EXTERNAL_IP is a reserved IP in "External IP addresses" on GCP. It needs to be in the same region.
-# Remember when changing LOAD_BALANCER_EXTERNAL_IP to update record A in the Cloud DNS for gateway
 cat <<EOT >> "$GITHUB_ENV"
 GO_VERSION=^1.16.3
 SKIP_DEPS_INSTALLATION=false
@@ -14,15 +12,15 @@ CERT_SERVICE_NAMESPACE=capact-system
 EOT
 
 
-if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]
-then
-  PR_NUMBER=$(echo "$GITHUB_REF" | awk 'BEGIN { FS = "/" } ; { print $3 }')
-  echo "DOCKER_TAG=PR-${PR_NUMBER}" >> "$GITHUB_ENV"
-  echo "DOCKER_REPOSITORY=ghcr.io/project-voltron/go-voltron/pr" >> "$GITHUB_ENV"
-else
-  echo "DOCKER_TAG=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
-  echo "DOCKER_REPOSITORY=gcr.io/project-voltron/go-voltron" >> "$GITHUB_ENV"
-fi
+# if [ "${GITHUB_EVENT_NAME}" = "pull_request" ]
+# then
+#   PR_NUMBER=$(echo "$GITHUB_REF" | awk 'BEGIN { FS = "/" } ; { print $3 }')
+#   echo "DOCKER_TAG=PR-${PR_NUMBER}" >> "$GITHUB_ENV"
+#   echo "DOCKER_REPOSITORY=ghcr.io/project-voltron/go-voltron/pr" >> "$GITHUB_ENV"
+# else
+#   echo "DOCKER_TAG=${GITHUB_SHA:0:7}" >> "$GITHUB_ENV"
+#   echo "DOCKER_REPOSITORY=gcr.io/project-voltron/go-voltron" >> "$GITHUB_ENV"
+# fi
 
 function returnInfraMatrixIfNeeded() {
   while read -r file; do
