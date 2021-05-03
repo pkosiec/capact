@@ -1,6 +1,9 @@
 name: Github Package build
   
 on:
+  push:
+    branches:
+      - "github-package"
   workflow_dispatch:
 
 jobs:
