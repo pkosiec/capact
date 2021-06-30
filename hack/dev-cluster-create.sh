@@ -15,6 +15,8 @@ REPO_ROOT_DIR=$(cd "${CURRENT_DIR}/.." && pwd)
 readonly CURRENT_DIR
 readonly REPO_ROOT_DIR
 
+# test
+
 # shellcheck source=./hack/lib/utilities.sh
 source "${CURRENT_DIR}/lib/utilities.sh" || { echo 'Cannot load CI utilities.'; exit 1; }
 # shellcheck source=./hack/lib/const.sh
