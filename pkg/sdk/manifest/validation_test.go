@@ -31,7 +31,7 @@ func TestFilesystemValidator_ValidateFile(t *testing.T) {
 			// given
 
 			// when
-			result, err := validator.ValidateFile(tc.manifestPath)
+			result, err := validator.Do(tc.manifestPath)
 
 			// then
 			require.Nil(t, err, "failed to read file: %v", err)

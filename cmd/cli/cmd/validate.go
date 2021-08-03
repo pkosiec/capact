@@ -1,23 +1,21 @@
 package cmd
 
 import (
-	"fmt"
+	"capact.io/capact/internal/cli/validate"
 	"os"
 
 	"capact.io/capact/internal/cli"
 	"capact.io/capact/internal/cli/heredoc"
-	"capact.io/capact/internal/cli/schema"
-	"capact.io/capact/pkg/sdk/manifest"
-
-	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
 // NewValidate returns a cobra.Command for validating Hub Manifests.
 func NewValidate() *cobra.Command {
-	schemaProvider := schema.Provider{}
+	var opts validate.Options
 
-	validateCmd := &cobra.Command{
+
+
+	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "Validate OCF manifests",
 		Example: heredoc.WithCLIName(`
@@ -33,36 +31,19 @@ func NewValidate() *cobra.Command {
 			# Validate all Hub manifests
 			<cli> validate ./manifests/**/*.yaml`, cli.Name),
 		Args: cobra.MinimumNArgs(1),
-		Run: func(cmd *cobra.Command, args []string) {
-			validator := manifest.NewFilesystemValidator(schemaProvider.FileSystem())
-
-			fmt.Println("Validating files...")
-
-			shouldFail := false
-
-			for _, filepath := range args {
-				result, err := validator.ValidateFile(filepath)
-
-				if err == nil && result.Valid() {
-					color.Green("- %s: PASSED\n", filepath)
-				} else {
-					color.Red("- %s: FAILED\n", filepath)
-					for _, err := range append(result.Errors, err) {
-						color.Red("    %v", err)
-					}
-
-					shouldFail = true
-				}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			validation, err := validate.New(os.Stdout, opts)
+			if err != nil {
+				return err
 			}
 
-			if shouldFail {
-				fmt.Fprintf(os.Stderr, "Some files failed validation\n")
-				os.Exit(1)
-			}
+			return validation.Run(cmd.Context(), args)
 		},
 	}
 
-	schemaProvider.RegisterSchemaFlags(validateCmd.PersistentFlags())
+	flags := cmd.Flags()
+	flags.StringVarP(&opts.SchemaLocation, "schemas", "s", "", "Path to the local directory with OCF JSONSchemas. If not provided, built-in JSONSchemas are used.")
+	flags.BoolVar(&opts.ServerSide, "server-side", false, "If enabled, the manifests validation is proceeded against Capact Hub.")
 
-	return validateCmd
+	return cmd
 }

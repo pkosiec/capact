@@ -27,10 +27,33 @@ type InputTypeInstanceRef struct {
 	ID string `json:"id"`
 }
 
-// TypeRefWithOptRevision specify type by path and optional revision.
+// TypeRefWithOptRevision specifies type by path and optional revision.
 type TypeRefWithOptRevision struct {
 	// Path of a given Type.
 	Path string `json:"path"`
 	// Version of the manifest content in the SemVer format.
 	Revision *string `json:"revision"`
 }
+
+// ManifestKind specifies OCF manifest kind.
+type ManifestKind string
+
+const (
+	RepoMetadataManifestKind ManifestKind = "RepoMetadata"
+	TypeManifestKind ManifestKind = "Type"
+	AttributeManifestKind ManifestKind = "Attribute"
+	InterfaceManifestKind ManifestKind = "Interface"
+	ImplementationManifestKind ManifestKind = "Implementation"
+	InterfaceGroupManifestKind ManifestKind = "InterfaceGroup"
+	VendorManifestKind ManifestKind = "Vendor"
+)
+
+type OCFVersion string
+
+type ManifestMetadata struct {
+	OCFVersion OCFVersion `yaml:"ocfVersion"`
+	Kind       ManifestKind `yaml:"kind"`
+}
+
+
+
