@@ -8,7 +8,6 @@ import (
 	"github.com/xeipuuv/gojsonschema"
 	"net/http"
 	"os"
-	"sigs.k8s.io/yaml"
 	"sort"
 )
 
@@ -17,40 +16,38 @@ type loadedOCFSchema struct {
 	kind   map[types.ManifestKind]*gojsonschema.Schema
 }
 
-type JSONSchemaValidator struct {
+// OCFSchemaValidator validates manifests using a OCF specification, which is read from a filesystem.
+type OCFSchemaValidator struct {
 	fs             http.FileSystem
 
 	schemaRootPath string
 	cachedSchemas  map[types.OCFVersion]*loadedOCFSchema
 }
 
-func NewJSONSchemaValidator(fs http.FileSystem, schemaRootPath string) *JSONSchemaValidator {
-	return &JSONSchemaValidator{
+// NewOCFSchemaValidator returns a new OCFSchemaValidator.
+func NewOCFSchemaValidator(fs http.FileSystem, schemaRootPath string) *OCFSchemaValidator {
+	return &OCFSchemaValidator{
 		schemaRootPath: schemaRootPath,
 		fs:             fs,
 		cachedSchemas:  map[types.OCFVersion]*loadedOCFSchema{},
 	}
 }
 
-func (v *JSONSchemaValidator) Do(metadata types.ManifestMetadata, yamlBytes []byte) (ValidationResult, error) {
+// Do validates a manifest.
+func (v *OCFSchemaValidator) Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	schema, err := v.getManifestSchema(metadata)
 	if err != nil {
-		return newSimpleValidationResult(), errors.Wrap(err, "failed to get JSON schema")
-	}
-
-	jsonBytes, err := yaml.YAMLToJSON(yamlBytes)
-	if err != nil {
-		return newSimpleValidationResult(errors.Wrap(err, "cannot convert YAML manifest to JSON")), err
+		return newValidationResult(), errors.Wrap(err, "failed to get JSON schema")
 	}
 
 	manifestLoader := gojsonschema.NewBytesLoader(jsonBytes)
 
 	jsonschemaResult, err := schema.Validate(manifestLoader)
 	if err != nil {
-		return newSimpleValidationResult(errors.Wrap(err, "error occurred during JSON schema validation")), err
+		return newValidationResult(errors.Wrap(err, "error occurred during JSON schema validation")), err
 	}
 
-	result := newSimpleValidationResult()
+	result := newValidationResult()
 
 	for _, err := range jsonschemaResult.Errors() {
 		result.Errors = append(result.Errors, fmt.Errorf("%v", err.String()))
@@ -59,8 +56,12 @@ func (v *JSONSchemaValidator) Do(metadata types.ManifestMetadata, yamlBytes []by
 	return result, err
 }
 
+// Name returns validator name.
+func (v *OCFSchemaValidator) Name() string {
+	return "OCFSchemaValidator"
+}
 
-func (v *JSONSchemaValidator) getManifestSchema(metadata types.ManifestMetadata) (*gojsonschema.Schema, error) {
+func (v *OCFSchemaValidator) getManifestSchema(metadata types.ManifestMetadata) (*gojsonschema.Schema, error) {
 	var ok bool
 	var cachedSchema *loadedOCFSchema
 
@@ -96,18 +97,18 @@ func (v *JSONSchemaValidator) getManifestSchema(metadata types.ManifestMetadata)
 	return schema, nil
 }
 
-func (v *JSONSchemaValidator) getRootSchemaJSONLoader(metadata types.ManifestMetadata) gojsonschema.JSONLoader {
+func (v *OCFSchemaValidator) getRootSchemaJSONLoader(metadata types.ManifestMetadata) gojsonschema.JSONLoader {
 	filename := strcase.ToKebab(string(metadata.Kind))
 	path := fmt.Sprintf("file://%s/%s/schema/%s.json", v.schemaRootPath, metadata.OCFVersion, filename)
 	return gojsonschema.NewReferenceLoaderFileSystem(path, v.fs)
 }
 
-func (v *JSONSchemaValidator) getCommonSchemaLoader(ocfVersion types.OCFVersion) (*gojsonschema.SchemaLoader, error) {
+func (v *OCFSchemaValidator) getCommonSchemaLoader(ocfVersion types.OCFVersion) (*gojsonschema.SchemaLoader, error) {
 	commonDir := fmt.Sprintf("%s/%s/schema/common", v.schemaRootPath, ocfVersion)
 
 	sl := gojsonschema.NewSchemaLoader()
 
-	files, err := v.ReadDir(commonDir)
+	files, err := v.readDir(commonDir)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to list common schemas directory")
 	}
@@ -126,9 +127,9 @@ func (v *JSONSchemaValidator) getCommonSchemaLoader(ocfVersion types.OCFVersion)
 	return sl, nil
 }
 
-// ReadDir reads the directory named by dirname and returns
+// readDir reads the directory named by dirname and returns
 // a list of directory entries sorted by filename.
-func (v *JSONSchemaValidator) ReadDir(dirname string) ([]os.FileInfo, error) {
+func (v *OCFSchemaValidator) readDir(dirname string) ([]os.FileInfo, error) {
 	f, err := v.fs.Open(dirname)
 	if err != nil {
 		return nil, err

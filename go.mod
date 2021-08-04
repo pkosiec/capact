@@ -31,6 +31,7 @@ require (
 	github.com/machinebox/graphql v0.2.2
 	github.com/matryer/is v1.4.0 // indirect
 	github.com/mattn/go-isatty v0.0.12
+	github.com/mikefarah/yq/v3 v3.0.0-20201202084205-8846255d1c37 // indirect
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nautilus/gateway v0.1.16
 	github.com/nautilus/graphql v0.0.16

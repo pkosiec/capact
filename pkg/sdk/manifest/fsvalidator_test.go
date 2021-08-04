@@ -1,16 +1,18 @@
 package manifest_test
 
 import (
+	"capact.io/capact/internal/cli/schema"
 	"testing"
 
-	"capact.io/capact/internal/cli/schema"
 	"capact.io/capact/pkg/sdk/manifest"
 
 	"github.com/stretchr/testify/require"
 )
 
 func TestFilesystemValidator_ValidateFile(t *testing.T) {
-	validator := manifest.NewFilesystemValidator(&schema.LocalFileSystem{}, "../../../ocf-spec")
+	validator := manifest.NewFilesystemValidator(
+		manifest.WithOCFSchemaValidator(&schema.LocalFileSystem{}, "../../../ocf-spec"),
+	)
 
 	tests := map[string]struct {
 		manifestPath string

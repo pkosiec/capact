@@ -15,13 +15,13 @@ import (
 
 type Options struct {
 	SchemaLocation string
-	ServerSide bool
+	ServerSide     bool
 }
 
 type Validation struct {
-	hubCli client.Hub
+	hubCli         client.Hub
 	schemaProvider *schema.Provider
-	writer io.Writer
+	writer         io.Writer
 }
 
 func New(writer io.Writer, opts Options) (*Validation, error) {
@@ -29,7 +29,7 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 
 	var (
 		hubCli client.Hub
-		err error
+		err    error
 	)
 	if opts.ServerSide {
 		hubCli, err = client.NewHub(server)
@@ -42,13 +42,15 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 
 	return &Validation{
 		schemaProvider: schemaProvider,
-		hubCli: hubCli,
-		writer: writer,
+		hubCli:         hubCli,
+		writer:         writer,
 	}, nil
 }
 
 func (v *Validation) Run(ctx context.Context, filePaths []string) error {
-	validator := manifest.NewFilesystemValidator(v.schemaProvider.FileSystem())
+	validator := manifest.NewFilesystemValidator(
+		manifest.WithOCFSchemaValidator(v.schemaProvider.FileSystem()),
+	)
 
 	fmt.Println("Validating files...")
 

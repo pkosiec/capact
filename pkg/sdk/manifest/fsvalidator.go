@@ -10,13 +10,19 @@ import (
 
 // FilesystemManifestValidator validates manifests using a OCF specification, which is read from a filesystem.
 type FilesystemManifestValidator struct {
-	commonValidators []PartialValidator
-	kindValidators map[types.ManifestKind][]PartialValidator
+	commonValidators []JSONValidator
+	kindValidators map[types.ManifestKind][]JSONValidator
 }
 
 // NewFilesystemValidator returns a new FilesystemManifestValidator.
-func NewFilesystemValidator() FileValidator {
-	return &FilesystemManifestValidator{}
+func NewFilesystemValidator(opts ...ValidatorOption) FileValidator {
+	fsValidator := &FilesystemManifestValidator{}
+
+	for _, opt := range opts {
+		opt(fsValidator)
+	}
+
+	return fsValidator
 }
 
 // Do validates a manifest.
@@ -26,16 +32,21 @@ func (v *FilesystemManifestValidator) Do(path string) (ValidationResult, error) 
 		return newValidationResult(), err
 	}
 
-	metadata, err := getManifestMetadata(yamlBytes)
+	metadata, err := loadManifestMetadata(yamlBytes)
 	if err != nil {
 		return newValidationResult(errors.Wrap(err, "failed to read manifest metadata")), err
+	}
+
+	jsonBytes, err := yaml.YAMLToJSON(yamlBytes)
+	if err != nil {
+		return newValidationResult(errors.Wrap(err, "cannot convert YAML manifest to JSON")), err
 	}
 
 	validators := append (v.commonValidators, v.kindValidators[metadata.Kind]...)
 
 	var validationErrs []error
 	for _, validator := range validators {
-		res, err := validator.Do(metadata, yamlBytes)
+		res, err := validator.Do(metadata, jsonBytes)
 		if err != nil {
 			validationErrs = append(validationErrs, errors.Wrapf(err, "while running validator %s", validator.Name()))
 		}
@@ -46,7 +57,7 @@ func (v *FilesystemManifestValidator) Do(path string) (ValidationResult, error) 
 	return newValidationResult(validationErrs...), nil
 }
 
-func getManifestMetadata(yamlBytes []byte) (types.ManifestMetadata, error) {
+func loadManifestMetadata(yamlBytes []byte) (types.ManifestMetadata, error) {
 	mm := types.ManifestMetadata{}
 	err := yaml.Unmarshal(yamlBytes, &mm)
 	if err != nil {

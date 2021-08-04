@@ -37,7 +37,7 @@ func newValidationResult(errs ...error) ValidationResult {
 	}
 }
 
-type PartialValidator interface {
-	Do(metadata types.ManifestMetadata, yamlBytes []byte) (ValidationResult, error)
+type JSONValidator interface {
+	Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error)
 	Name() string
 }
