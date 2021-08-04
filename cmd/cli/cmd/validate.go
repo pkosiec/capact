@@ -13,8 +13,6 @@ import (
 func NewValidate() *cobra.Command {
 	var opts validate.Options
 
-
-
 	cmd := &cobra.Command{
 		Use:   "validate",
 		Short: "Validate OCF manifests",
@@ -43,7 +41,7 @@ func NewValidate() *cobra.Command {
 
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.SchemaLocation, "schemas", "s", "", "Path to the local directory with OCF JSONSchemas. If not provided, built-in JSONSchemas are used.")
-	flags.BoolVar(&opts.ServerSide, "server-side", false, "If enabled, the manifests validation is proceeded against Capact Hub.")
+	flags.BoolVar(&opts.ServerSide, "enable-remote-checks", false, "If enabled, additional manifests checks are proceeded against Capact Hub.")
 
 	return cmd
 }

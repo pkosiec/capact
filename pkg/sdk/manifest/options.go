@@ -1,12 +1,19 @@
 package manifest
 
-import "net/http"
+import "capact.io/capact/pkg/sdk/apis/0.0.1/types"
 
 type ValidatorOption func(validator *FilesystemManifestValidator)
 
-func WithOCFSchemaValidator(fs http.FileSystem, schemaRootPath string) ValidatorOption {
+func WithCommonValidators(validators ...JSONValidator) ValidatorOption {
 	return func(r *FilesystemManifestValidator) {
-		r.commonValidators = append(r.commonValidators, NewOCFSchemaValidator(fs, schemaRootPath))
+		r.commonValidators = append(r.commonValidators, validators...)
 	}
 }
+
+func WithKindValidators(kind types.ManifestKind, validators ...JSONValidator) ValidatorOption {
+	return func(r *FilesystemManifestValidator) {
+		r.kindValidators[kind] = append(r.kindValidators[kind], validators...)
+	}
+}
+
 

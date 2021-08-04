@@ -2,7 +2,6 @@ package manifest
 
 import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
-	"fmt"
 )
 
 // FileValidator is a interface, with the Do method.
@@ -17,14 +16,7 @@ type ValidationResult struct {
 	Errors []error
 }
 
-type ValidationError struct {
-	Path string
-	UnderlyingError error
-}
 
-func (e ValidationError) Error() string {
-	return fmt.Sprintf("while validating %q: %s", e.Path, e.UnderlyingError.Error())
-}
 
 // Valid returns true, if the manifest contains no errors.
 func (r *ValidationResult) Valid() bool {

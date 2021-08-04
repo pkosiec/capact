@@ -44,7 +44,7 @@ func (v *OCFSchemaValidator) Do(metadata types.ManifestMetadata, jsonBytes []byt
 
 	jsonschemaResult, err := schema.Validate(manifestLoader)
 	if err != nil {
-		return newValidationResult(errors.Wrap(err, "error occurred during JSON schema validation")), err
+		return newValidationResult(err), nil
 	}
 
 	result := newValidationResult()

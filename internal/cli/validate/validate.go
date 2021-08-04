@@ -7,7 +7,6 @@ import (
 	"capact.io/capact/pkg/sdk/manifest"
 	"context"
 	"fmt"
-	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"io"
 	"strings"
@@ -16,6 +15,20 @@ import (
 type Options struct {
 	SchemaLocation string
 	ServerSide     bool
+}
+
+type ValidationError struct {
+	Path   string
+	Errors []error
+}
+
+func (e *ValidationError) Error() string {
+	var errMsgs []string
+	for _, err := range e.Errors {
+		errMsgs = append(errMsgs, err.Error())
+	}
+
+	return fmt.Sprintf("%q:\n\t%s\n", e.Path, strings.Join(errMsgs, "\n\t"))
 }
 
 type Validation struct {
@@ -48,13 +61,15 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 }
 
 func (v *Validation) Run(ctx context.Context, filePaths []string) error {
-	validator := manifest.NewFilesystemValidator(
-		manifest.WithOCFSchemaValidator(v.schemaProvider.FileSystem()),
-	)
+	validator := manifest.NewDefaultFilesystemValidator(v.schemaProvider.FileSystem())
 
-	fmt.Println("Validating files...")
+	fileNoun := properNounFor("file", len(filePaths))
 
-	var errFilePaths []string
+	fmt.Fprintf(v.writer, "Validating %s...\n", fileNoun)
+
+	// TODO: Validate files concurrently
+
+	var errs []error
 	for _, filepath := range filePaths {
 		result, err := validator.Do(filepath)
 
@@ -63,25 +78,32 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 			resultErrs = append(resultErrs, err)
 		}
 
-		// TODO: Improve UX (response)
-
 		if len(resultErrs) > 0 {
-			color.Red("- %s: FAILED\n", filepath)
-
-			for _, err := range resultErrs {
-				color.Red("\t%v", err)
+			validationErr := &ValidationError{
+				Path:   filepath,
+				Errors: resultErrs,
 			}
-
-			errFilePaths = append(errFilePaths, filepath)
+			errs = append(errs, validationErr)
+			fmt.Fprintf(v.writer, "- %s\n", validationErr.Error())
 			continue
 		}
-
-		color.Green("- %s: PASSED\n", filepath)
 	}
 
-	if len(errFilePaths) > 0 {
-		return fmt.Errorf("the following files failed validation:\n%s", strings.Join(errFilePaths, "\n\t"))
+	fmt.Fprintf(v.writer, "Validated %d %s in total.\n", len(filePaths), fileNoun)
+
+	if len(errs) > 0 {
+		errNoun := properNounFor("error", len(errs))
+		return fmt.Errorf("%d validation %s detected.", len(errs), errNoun)
 	}
 
+	fmt.Fprintf(v.writer, "🚀 No errors detected.\n")
 	return nil
+}
+
+func properNounFor(str string, numberOfItems int) string {
+	if numberOfItems == 1 {
+		return str
+	}
+
+	return str + "s"
 }

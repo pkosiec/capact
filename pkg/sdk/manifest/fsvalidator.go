@@ -4,6 +4,7 @@ import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"github.com/pkg/errors"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"sigs.k8s.io/yaml"
 )
@@ -11,12 +12,26 @@ import (
 // FilesystemManifestValidator validates manifests using a OCF specification, which is read from a filesystem.
 type FilesystemManifestValidator struct {
 	commonValidators []JSONValidator
-	kindValidators map[types.ManifestKind][]JSONValidator
+	kindValidators   map[types.ManifestKind][]JSONValidator
+}
+
+// TODO: Rework constructor
+
+// NewDefaultFilesystemValidator returns a new FilesystemManifestValidator.
+func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string) FileValidator {
+	return NewFilesystemValidator(
+		WithCommonValidators(
+			NewOCFSchemaValidator(fs, ocfSchemaRootPath),
+		),
+		WithKindValidators(types.TypeManifestKind, NewTypeValidator()),
+	)
 }
 
 // NewFilesystemValidator returns a new FilesystemManifestValidator.
 func NewFilesystemValidator(opts ...ValidatorOption) FileValidator {
-	fsValidator := &FilesystemManifestValidator{}
+	fsValidator := &FilesystemManifestValidator{
+		kindValidators: make(map[types.ManifestKind][]JSONValidator),
+	}
 
 	for _, opt := range opts {
 		opt(fsValidator)
@@ -42,7 +57,7 @@ func (v *FilesystemManifestValidator) Do(path string) (ValidationResult, error) 
 		return newValidationResult(errors.Wrap(err, "cannot convert YAML manifest to JSON")), err
 	}
 
-	validators := append (v.commonValidators, v.kindValidators[metadata.Kind]...)
+	validators := append(v.commonValidators, v.kindValidators[metadata.Kind]...)
 
 	var validationErrs []error
 	for _, validator := range validators {
@@ -51,7 +66,11 @@ func (v *FilesystemManifestValidator) Do(path string) (ValidationResult, error) 
 			validationErrs = append(validationErrs, errors.Wrapf(err, "while running validator %s", validator.Name()))
 		}
 
-		validationErrs = append(validationErrs, res.Errors...)
+		var prefixedResErrs []error
+		for _, resErr := range res.Errors {
+			prefixedResErrs = append(prefixedResErrs, errors.Wrap(resErr, validator.Name()))
+		}
+		validationErrs = append(validationErrs, prefixedResErrs...)
 	}
 
 	return newValidationResult(validationErrs...), nil
