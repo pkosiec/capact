@@ -18,26 +18,23 @@ type FSValidator struct {
 // TODO: Rework constructor
 
 // NewDefaultFilesystemValidator returns a new FSValidator.
-func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string) FileSystemValidator {
-	return NewFilesystemValidator(
-		WithCommonValidators(
+func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string, opts ...ValidatorOption) FileSystemValidator {
+	validator := &FSValidator{
+		commonValidators: []JSONValidator{
 			NewOCFSchemaValidator(fs, ocfSchemaRootPath),
-		),
-		WithKindValidators(types.TypeManifestKind, NewTypeValidator()),
-	)
-}
-
-// NewFilesystemValidator returns a new FSValidator.
-func NewFilesystemValidator(opts ...ValidatorOption) FileSystemValidator {
-	fsValidator := &FSValidator{
-		kindValidators: make(map[types.ManifestKind][]JSONValidator),
+		},
+		kindValidators: map[types.ManifestKind][]JSONValidator{
+			types.TypeManifestKind: {
+				NewTypeValidator(),
+			},
+		},
 	}
 
 	for _, opt := range opts {
-		opt(fsValidator)
+		opt(validator)
 	}
 
-	return fsValidator
+	return validator
 }
 
 // Do validates a manifest.

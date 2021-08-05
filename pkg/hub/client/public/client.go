@@ -203,6 +203,10 @@ func (c *Client) ListImplementationRevisionsForInterface(ctx context.Context, re
 	return result, nil
 }
 
+func (c *Client) CheckTypeRevisionsExist(typeRefs []gqlpublicapi.TypeReference) (map[gqlpublicapi.TypeReference]bool, error) {
+
+}
+
 var key = regexp.MustCompile(`\$(\w+):`)
 
 // Args is used to store arguments to GraphQL queries.

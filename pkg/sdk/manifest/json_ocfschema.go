@@ -37,7 +37,7 @@ func NewOCFSchemaValidator(fs http.FileSystem, schemaRootPath string) *OCFSchema
 func (v *OCFSchemaValidator) Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	schema, err := v.getManifestSchema(metadata)
 	if err != nil {
-		return newValidationResult(), errors.Wrap(err, "failed to get JSON schema")
+		return newValidationResult(), errors.Wrap(err, "while getting manifest JSON schema")
 	}
 
 	manifestLoader := gojsonschema.NewBytesLoader(jsonBytes)

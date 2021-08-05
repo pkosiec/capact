@@ -16,8 +16,6 @@ type ValidationResult struct {
 	Errors []error
 }
 
-
-
 // Valid returns true, if the manifest contains no errors.
 func (r *ValidationResult) Valid() bool {
 	return len(r.Errors) == 0

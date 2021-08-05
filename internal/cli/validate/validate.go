@@ -39,10 +39,12 @@ type Validation struct {
 
 func New(writer io.Writer, opts Options) (*Validation, error) {
 	server := config.GetDefaultContext()
+	fs, ocfSchemaRootPath := schema.NewProvider(opts.SchemaLocation).FileSystem()
 
 	var (
 		hubCli client.Hub
 		err    error
+		validatorOpts []manifest.ValidatorOption
 	)
 
 	if opts.ServerSide {
@@ -50,11 +52,11 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "while creating Hub client")
 		}
-		// TODO: Pass it to validator
+
+		validatorOpts = append(validatorOpts, manifest.WithRemoteChecks(hubCli))
 	}
 
-	schemaProvider := schema.NewProvider(opts.SchemaLocation)
-	validator := manifest.NewDefaultFilesystemValidator(schemaProvider.FileSystem())
+	validator := manifest.NewDefaultFilesystemValidator(fs, ocfSchemaRootPath, validatorOpts...)
 
 	return &Validation{
 		validator: validator,

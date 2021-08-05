@@ -4,16 +4,16 @@ import "capact.io/capact/pkg/sdk/apis/0.0.1/types"
 
 type ValidatorOption func(validator *FSValidator)
 
-func WithCommonValidators(validators ...JSONValidator) ValidatorOption {
+func WithRemoteChecks(hubCli Hub) ValidatorOption {
 	return func(r *FSValidator) {
-		r.commonValidators = append(r.commonValidators, validators...)
+		r.kindValidators[types.TypeManifestKind] = append(r.kindValidators[types.TypeManifestKind], NewRemoteTypeValidator(hubCli))
+		r.kindValidators[types.InterfaceManifestKind] = append(r.kindValidators[types.InterfaceManifestKind], NewRemoteInterfaceValidator(hubCli))
+		r.kindValidators[types.ImplementationManifestKind] = append(r.kindValidators[types.ImplementationManifestKind], NewRemoteImplementationValidator(hubCli))
 	}
 }
 
-func WithKindValidators(kind types.ManifestKind, validators ...JSONValidator) ValidatorOption {
+func WithKindValidators(kindValidators map[types.ManifestKind][]JSONValidator) ValidatorOption {
 	return func(r *FSValidator) {
-		r.kindValidators[kind] = append(r.kindValidators[kind], validators...)
+		r.kindValidators = kindValidators
 	}
 }
-
-
