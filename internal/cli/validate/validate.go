@@ -33,7 +33,7 @@ func (e *ValidationError) Error() string {
 
 type Validation struct {
 	hubCli         client.Hub
-	schemaProvider *schema.Provider
+	validator 	   manifest.FileSystemValidator
 	writer         io.Writer
 }
 
@@ -44,25 +44,26 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 		hubCli client.Hub
 		err    error
 	)
+
 	if opts.ServerSide {
 		hubCli, err = client.NewHub(server)
 		if err != nil {
 			return nil, errors.Wrap(err, "while creating Hub client")
 		}
+		// TODO: Pass it to validator
 	}
 
 	schemaProvider := schema.NewProvider(opts.SchemaLocation)
+	validator := manifest.NewDefaultFilesystemValidator(schemaProvider.FileSystem())
 
 	return &Validation{
-		schemaProvider: schemaProvider,
+		validator: validator,
 		hubCli:         hubCli,
 		writer:         writer,
 	}, nil
 }
 
 func (v *Validation) Run(ctx context.Context, filePaths []string) error {
-	validator := manifest.NewDefaultFilesystemValidator(v.schemaProvider.FileSystem())
-
 	fileNoun := properNounFor("file", len(filePaths))
 
 	fmt.Fprintf(v.writer, "Validating %s...\n", fileNoun)
@@ -71,7 +72,7 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 
 	var errs []error
 	for _, filepath := range filePaths {
-		result, err := validator.Do(filepath)
+		result, err := v.validator.Do(filepath)
 
 		resultErrs := result.Errors
 		if err != nil {

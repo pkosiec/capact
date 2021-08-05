@@ -4,10 +4,10 @@ import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 )
 
-// FileValidator is a interface, with the Do method.
+// FileSystemValidator is a interface, with the Do method.
 // Do validates the manifest in filepath and return a ValidationResult.
 // If other, not manifest related errors occur, it will return an error.
-type FileValidator interface {
+type FileSystemValidator interface {
 	Do(filepath string) (ValidationResult, error)
 }
 

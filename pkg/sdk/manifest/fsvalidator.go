@@ -9,16 +9,16 @@ import (
 	"sigs.k8s.io/yaml"
 )
 
-// FilesystemManifestValidator validates manifests using a OCF specification, which is read from a filesystem.
-type FilesystemManifestValidator struct {
+// FSValidator validates manifests using a OCF specification, which is read from a filesystem.
+type FSValidator struct {
 	commonValidators []JSONValidator
 	kindValidators   map[types.ManifestKind][]JSONValidator
 }
 
 // TODO: Rework constructor
 
-// NewDefaultFilesystemValidator returns a new FilesystemManifestValidator.
-func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string) FileValidator {
+// NewDefaultFilesystemValidator returns a new FSValidator.
+func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string) FileSystemValidator {
 	return NewFilesystemValidator(
 		WithCommonValidators(
 			NewOCFSchemaValidator(fs, ocfSchemaRootPath),
@@ -27,9 +27,9 @@ func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string)
 	)
 }
 
-// NewFilesystemValidator returns a new FilesystemManifestValidator.
-func NewFilesystemValidator(opts ...ValidatorOption) FileValidator {
-	fsValidator := &FilesystemManifestValidator{
+// NewFilesystemValidator returns a new FSValidator.
+func NewFilesystemValidator(opts ...ValidatorOption) FileSystemValidator {
+	fsValidator := &FSValidator{
 		kindValidators: make(map[types.ManifestKind][]JSONValidator),
 	}
 
@@ -41,7 +41,7 @@ func NewFilesystemValidator(opts ...ValidatorOption) FileValidator {
 }
 
 // Do validates a manifest.
-func (v *FilesystemManifestValidator) Do(path string) (ValidationResult, error) {
+func (v *FSValidator) Do(path string) (ValidationResult, error) {
 	yamlBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return newValidationResult(), err
