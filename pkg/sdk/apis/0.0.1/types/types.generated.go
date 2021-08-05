@@ -123,7 +123,7 @@ type InterfaceSpec struct {
 
 // The input schema for Interface action.
 type Input struct {
-	Parameters    *Parameters                  `json:"parameters"`             
+	Parameters    *ParametersUnion             `json:"parameters"`             
 	TypeInstances map[string]InputTypeInstance `json:"typeInstances,omitempty"`
 }
 
@@ -218,8 +218,13 @@ type Action struct {
 
 // Specifies additional input for the Implementation.
 type AdditionalInput struct {
-	Parameters    map[string]interface{}       `json:"parameters,omitempty"`   // Specifies additional input parameters for the Implementation
+	Parameters    *ParametersClass             `json:"parameters,omitempty"`   // Specifies additional input parameters for the Implementation
 	TypeInstances map[string]InputTypeInstance `json:"typeInstances,omitempty"`
+}
+
+// Specifies additional input parameters for the Implementation
+type ParametersClass struct {
+	TypeRef *TypeRef `json:"typeRef,omitempty"`
 }
 
 // Specifies additional output for a given Implementation.
@@ -418,7 +423,7 @@ const (
 	KindVendor VendorKind = "Vendor"
 )
 
-type Parameters struct {
+type ParametersUnion struct {
 	AnythingArray []interface{}
 	Bool          *bool
 	Double        *float64
@@ -427,7 +432,7 @@ type Parameters struct {
 	String        *string
 }
 
-func (x *Parameters) UnmarshalJSON(data []byte) error {
+func (x *ParametersUnion) UnmarshalJSON(data []byte) error {
 	x.AnythingArray = nil
 	x.ParameterMap = nil
 	object, err := unmarshalUnion(data, &x.Integer, &x.Double, &x.Bool, &x.String, true, &x.AnythingArray, false, nil, true, &x.ParameterMap, false, nil, true)
@@ -439,7 +444,7 @@ func (x *Parameters) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (x *Parameters) MarshalJSON() ([]byte, error) {
+func (x *ParametersUnion) MarshalJSON() ([]byte, error) {
 	return marshalUnion(x.Integer, x.Double, x.Bool, x.String, x.AnythingArray != nil, x.AnythingArray, false, nil, x.ParameterMap != nil, x.ParameterMap, false, nil, true)
 }
 
