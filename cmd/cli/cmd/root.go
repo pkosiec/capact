@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	"capact.io/capact/cmd/cli/cmd/manifest"
 	"log"
 	"strings"
+
+	"capact.io/capact/cmd/cli/cmd/manifest"
 
 	"capact.io/capact/cmd/cli/cmd/environment"
 	"capact.io/capact/cmd/cli/cmd/policy"

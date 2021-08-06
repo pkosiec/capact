@@ -1,9 +1,11 @@
 package manifest_test
 
 import (
+	"context"
+	"testing"
+
 	"capact.io/capact/internal/cli/schema"
 	"github.com/stretchr/testify/assert"
-	"testing"
 
 	"capact.io/capact/pkg/sdk/manifest"
 
@@ -15,7 +17,7 @@ func TestFilesystemValidator_ValidateFile(t *testing.T) {
 	validator := manifest.NewDefaultFilesystemValidator(&schema.LocalFileSystem{}, "../../../ocf-spec")
 
 	tests := map[string]struct {
-		manifestPath   string
+		manifestPath      string
 		expectedErrorMsgs []string
 	}{
 		"Invalid Implementation": {
@@ -26,18 +28,18 @@ func TestFilesystemValidator_ValidateFile(t *testing.T) {
 			},
 		},
 		"Valid Implementation": {
-			manifestPath:   "testdata/valid-implementation.yaml",
+			manifestPath:      "testdata/valid-implementation.yaml",
 			expectedErrorMsgs: []string{},
 		},
 		"Invalid JSON Schema in Type": {
-			manifestPath:   "testdata/invalid-type1.yaml",
+			manifestPath: "testdata/invalid-type1.yaml",
 			expectedErrorMsgs: []string{
 				"type: Must validate at least one schema (anyOf)",
 				`type: type must be one of the following: "array", "boolean", "integer", "null", "number", "object", "string"`,
 			},
 		},
 		"Invalid JSON for Type": {
-			manifestPath:   "testdata/invalid-type2.yaml",
+			manifestPath: "testdata/invalid-type2.yaml",
 			expectedErrorMsgs: []string{
 				"while JSON schema validation: invalid character '}' looking for beginning of object key string",
 			},
@@ -46,9 +48,8 @@ func TestFilesystemValidator_ValidateFile(t *testing.T) {
 
 	for tn, tc := range tests {
 		t.Run(tn, func(t *testing.T) {
-
 			// when
-			result, err := validator.Do(tc.manifestPath)
+			result, err := validator.Do(context.Background(), tc.manifestPath)
 
 			// then
 			require.Nil(t, err, "failed to read file: %v", err)

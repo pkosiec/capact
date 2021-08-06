@@ -39,21 +39,27 @@ type TypeRefWithOptRevision struct {
 type ManifestKind string
 
 const (
+	// RepoMetadataManifestKind specifies RepoMetadata kind.
 	RepoMetadataManifestKind ManifestKind = "RepoMetadata"
+	// TypeManifestKind specifies Type kind.
 	TypeManifestKind ManifestKind = "Type"
+	// AttributeManifestKind specifies Attribute kind.
 	AttributeManifestKind ManifestKind = "Attribute"
+	// InterfaceManifestKind specifies Interface kind.
 	InterfaceManifestKind ManifestKind = "Interface"
+	// ImplementationManifestKind specifies Implementation kind.
 	ImplementationManifestKind ManifestKind = "Implementation"
+	// InterfaceGroupManifestKind specifies InterfaceGroup kind.
 	InterfaceGroupManifestKind ManifestKind = "InterfaceGroup"
+	// VendorManifestKind specifies Vendor kind.
 	VendorManifestKind ManifestKind = "Vendor"
 )
 
+// OCFVersion specifies the OCF version.
 type OCFVersion string
 
+// ManifestMetadata specifies the essential, common OCF manifest metadata.
 type ManifestMetadata struct {
-	OCFVersion OCFVersion `yaml:"ocfVersion"`
+	OCFVersion OCFVersion   `yaml:"ocfVersion"`
 	Kind       ManifestKind `yaml:"kind"`
 }
-
-
-

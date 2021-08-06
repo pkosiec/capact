@@ -1,23 +1,27 @@
 package manifest
 
 import (
-	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
 	"encoding/json"
+
+	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"github.com/pkg/errors"
 )
 
+// RemoteInterfaceValidator is a validator for Interface manifest, which calls Hub in order to do validation checks.
 type RemoteInterfaceValidator struct {
 	hub Hub
 }
 
+// NewRemoteInterfaceValidator creates new RemoteImplementationValidator.
 func NewRemoteInterfaceValidator(hub Hub) *RemoteInterfaceValidator {
 	return &RemoteInterfaceValidator{
 		hub: hub,
 	}
 }
 
+// Do is a method which triggers the validation.
 func (v *RemoteInterfaceValidator) Do(ctx context.Context, _ types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	var entity types.Interface
 	err := json.Unmarshal(jsonBytes, &entity)
@@ -64,6 +68,7 @@ func (v *RemoteInterfaceValidator) Do(ctx context.Context, _ types.ManifestMetad
 	return checkManifestRevisionsExist(ctx, v.hub, manifestRefsToCheck)
 }
 
+// Name returns the validator name.
 func (v *RemoteInterfaceValidator) Name() string {
 	return "RemoteInterfaceValidator"
 }

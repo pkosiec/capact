@@ -1,20 +1,24 @@
 package manifest
 
 import (
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"github.com/pkg/errors"
 	"github.com/xeipuuv/gojsonschema"
 )
 
-type TypeValidator struct {}
+// TypeValidator is a validator for Type manifest.
+type TypeValidator struct{}
 
+// NewTypeValidator creates new TypeValidator.
 func NewTypeValidator() *TypeValidator {
 	return &TypeValidator{}
 }
 
+// Do is a method which triggers the validation.
 func (v *TypeValidator) Do(_ context.Context, _ types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	var typeEntity types.Type
 	err := json.Unmarshal(jsonBytes, &typeEntity)
@@ -39,6 +43,7 @@ func (v *TypeValidator) Do(_ context.Context, _ types.ManifestMetadata, jsonByte
 	return result, nil
 }
 
+// Name returns the validator name.
 func (v *TypeValidator) Name() string {
 	return "TypeValidator"
 }

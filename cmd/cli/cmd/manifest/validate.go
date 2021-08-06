@@ -1,8 +1,9 @@
 package manifest
 
 import (
-	"capact.io/capact/internal/cli/validate"
 	"os"
+
+	"capact.io/capact/internal/cli/validate"
 
 	"capact.io/capact/internal/cli"
 	"capact.io/capact/internal/cli/heredoc"

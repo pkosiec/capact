@@ -1,24 +1,28 @@
 package manifest
 
 import (
-	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"strings"
+
+	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"github.com/pkg/errors"
 )
 
+// RemoteImplementationValidator is a validator for Implementation manifest, which calls Hub in order to do validation checks.
 type RemoteImplementationValidator struct {
 	hub Hub
 }
 
+// NewRemoteImplementationValidator creates new RemoteImplementationValidator.
 func NewRemoteImplementationValidator(hub Hub) *RemoteImplementationValidator {
 	return &RemoteImplementationValidator{
 		hub: hub,
 	}
 }
 
+// Do is a method which triggers the validation.
 func (v *RemoteImplementationValidator) Do(ctx context.Context, _ types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	var entity types.Implementation
 	err := json.Unmarshal(jsonBytes, &entity)
@@ -38,7 +42,6 @@ func (v *RemoteImplementationValidator) Do(ctx context.Context, _ types.Manifest
 
 	// AdditionalInput
 	if entity.Spec.AdditionalInput != nil {
-
 		// Parameters
 		additionalInputParams := entity.Spec.AdditionalInput.Parameters
 		if additionalInputParams != nil && additionalInputParams.TypeRef != nil {
@@ -107,6 +110,7 @@ func (v *RemoteImplementationValidator) Do(ctx context.Context, _ types.Manifest
 	return checkManifestRevisionsExist(ctx, v.hub, manifestRefsToCheck)
 }
 
+// Name returns the validator name.
 func (v *RemoteImplementationValidator) Name() string {
 	return "RemoteImplementationValidator"
 }

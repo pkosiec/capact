@@ -1,12 +1,13 @@
 package manifest
 
 import (
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"path/filepath"
+
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"github.com/pkg/errors"
 	"sigs.k8s.io/yaml"
 )
 

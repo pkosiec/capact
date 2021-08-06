@@ -1,15 +1,16 @@
 package manifest
 
 import (
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
 	"fmt"
-	"github.com/iancoleman/strcase"
-	"github.com/pkg/errors"
-	"github.com/xeipuuv/gojsonschema"
 	"net/http"
 	"os"
 	"sort"
+
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"github.com/iancoleman/strcase"
+	"github.com/pkg/errors"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type loadedOCFSchema struct {
@@ -19,7 +20,7 @@ type loadedOCFSchema struct {
 
 // OCFSchemaValidator validates manifests using a OCF specification, which is read from a filesystem.
 type OCFSchemaValidator struct {
-	fs             http.FileSystem
+	fs http.FileSystem
 
 	schemaRootPath string
 	cachedSchemas  map[types.OCFVersion]*loadedOCFSchema

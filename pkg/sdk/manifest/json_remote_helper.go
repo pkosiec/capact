@@ -1,12 +1,14 @@
 package manifest
 
 import (
-	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
 	"context"
 	"fmt"
+
+	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
 	"github.com/pkg/errors"
 )
 
+// Hub is an interface for Hub GraphQL client methods needed for the remote validation.
 type Hub interface {
 	CheckManifestRevisionsExist(ctx context.Context, manifestRefs []hubpublicgraphql.ManifestReference) (map[hubpublicgraphql.ManifestReference]bool, error)
 }

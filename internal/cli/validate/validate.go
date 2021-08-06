@@ -1,27 +1,31 @@
 package validate
 
 import (
+	"context"
+	"fmt"
+	"io"
+	"strings"
+
 	"capact.io/capact/internal/cli/client"
 	"capact.io/capact/internal/cli/config"
 	"capact.io/capact/internal/cli/schema"
 	"capact.io/capact/pkg/sdk/manifest"
-	"context"
-	"fmt"
 	"github.com/pkg/errors"
-	"io"
-	"strings"
 )
 
+// Options struct defines validation options for OCF manifest validation.
 type Options struct {
 	SchemaLocation string
 	ServerSide     bool
 }
 
+// ValidationError defines a validation error.
 type ValidationError struct {
 	Path   string
 	Errors []error
 }
 
+// Error returns error message based on the ValidationError data.
 func (e *ValidationError) Error() string {
 	var errMsgs []string
 	for _, err := range e.Errors {
@@ -31,19 +35,21 @@ func (e *ValidationError) Error() string {
 	return fmt.Sprintf("%q:\n\t%s\n", e.Path, strings.Join(errMsgs, "\n\t"))
 }
 
+// Validation defines OCF manifest validation operation.
 type Validation struct {
-	hubCli         client.Hub
-	validator 	   manifest.FileSystemValidator
-	writer         io.Writer
+	hubCli    client.Hub
+	validator manifest.FileSystemValidator
+	writer    io.Writer
 }
 
+// New creates new Validation.
 func New(writer io.Writer, opts Options) (*Validation, error) {
 	server := config.GetDefaultContext()
 	fs, ocfSchemaRootPath := schema.NewProvider(opts.SchemaLocation).FileSystem()
 
 	var (
-		hubCli client.Hub
-		err    error
+		hubCli        client.Hub
+		err           error
 		validatorOpts []manifest.ValidatorOption
 	)
 
@@ -60,11 +66,12 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 
 	return &Validation{
 		validator: validator,
-		hubCli:         hubCli,
-		writer:         writer,
+		hubCli:    hubCli,
+		writer:    writer,
 	}, nil
 }
 
+// Run runs validation across all JSON validators.
 func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 	fileNoun := properNounFor("file", len(filePaths))
 
@@ -96,7 +103,7 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 
 	if len(errs) > 0 {
 		errNoun := properNounFor("error", len(errs))
-		return fmt.Errorf("%d validation %s detected.", len(errs), errNoun)
+		return fmt.Errorf("detected %d validation %s", len(errs), errNoun)
 	}
 
 	fmt.Fprintf(v.writer, "🚀 No errors detected.\n")

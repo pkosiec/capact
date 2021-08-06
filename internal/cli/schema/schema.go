@@ -13,6 +13,7 @@ type Provider struct {
 	localSchemaRootDir string
 }
 
+// NewProvider instantiates new Provider.
 func NewProvider(localSchemaRootDir string) *Provider {
 	return &Provider{localSchemaRootDir: localSchemaRootDir}
 }

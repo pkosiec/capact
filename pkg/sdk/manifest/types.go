@@ -1,11 +1,12 @@
 package manifest
 
 import (
-	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 	"context"
+
+	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
 )
 
-// FileSystemValidator is a interface, with the Do method.
+// FileSystemValidator is an interface, with the Do method.
 // Do validates the manifest in filepath and return a ValidationResult.
 // If other, not manifest related errors occur, it will return an error.
 type FileSystemValidator interface {
@@ -28,6 +29,7 @@ func newValidationResult(errs ...error) ValidationResult {
 	}
 }
 
+// JSONValidator is an interface of validator which takes JSON bytes as input.
 type JSONValidator interface {
 	Do(ctx context.Context, metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error)
 	Name() string
