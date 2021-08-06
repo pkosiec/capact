@@ -32,7 +32,7 @@ func (e *ValidationError) Error() string {
 		errMsgs = append(errMsgs, err.Error())
 	}
 
-	return fmt.Sprintf("%q:\n\t%s\n", e.Path, strings.Join(errMsgs, "\n\t"))
+	return fmt.Sprintf("%q:\n    * %s\n", e.Path, strings.Join(errMsgs, "\n    * "))
 }
 
 // Validation defines OCF manifest validation operation.

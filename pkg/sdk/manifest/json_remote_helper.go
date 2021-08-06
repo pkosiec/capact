@@ -29,7 +29,7 @@ func checkManifestRevisionsExist(ctx context.Context, hub Hub, manifestRefsToChe
 			continue
 		}
 
-		validationErrs = append(validationErrs, fmt.Errorf("the '%s:%s' Type revision doesn't exist in Hub", typeRef.Path, typeRef.Revision))
+		validationErrs = append(validationErrs, fmt.Errorf("manifest revision '%s:%s' doesn't exist in Hub", typeRef.Path, typeRef.Revision))
 	}
 
 	return ValidationResult{Errors: validationErrs}, nil
