@@ -233,8 +233,8 @@ type AdditionalOutput struct {
 }
 
 type Implement struct {
-	Path     string  `json:"path"`              // The Interface path, for example cap.interfaces.db.mysql.install
-	Revision *string `json:"revision,omitempty"`// The exact Interface revision.
+	Path     string `json:"path"`    // The Interface path, for example cap.interfaces.db.mysql.install
+	Revision string `json:"revision"`// The exact Interface revision.
 }
 
 type Import struct {
@@ -245,8 +245,8 @@ type Import struct {
 }
 
 type Method struct {
-	Name     string  `json:"name"`              // The name of the action for a given InterfaceGroup, e.g. install.
-	Revision *string `json:"revision,omitempty"`// Revision of the Interface for a given action. If not specified, the latest revision is; used.
+	Name     string `json:"name"`    // The name of the action for a given InterfaceGroup, e.g. install.
+	Revision string `json:"revision"`// Revision of the Interface for a given action. If not specified, the latest revision is; used.
 }
 
 // Object key is an alias of the TypeInstance, used in the Implementation

@@ -194,7 +194,8 @@
             "$id": "#/properties/spec/properties/implements/items",
             "type": "object",
             "required": [
-              "path"
+              "path",
+              "revision"
             ],
             "properties": {
               "path": {
@@ -291,7 +292,8 @@
                 "items": {
                   "type": "object",
                   "required": [
-                    "name"
+                    "name",
+                    "revision"
                   ],
                   "properties": {
                     "name": {
