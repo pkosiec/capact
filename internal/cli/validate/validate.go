@@ -74,7 +74,7 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 
 	var errs []error
 	for _, filepath := range filePaths {
-		result, err := v.validator.Do(filepath)
+		result, err := v.validator.Do(ctx, filepath)
 
 		resultErrs := result.Errors
 		if err != nil {

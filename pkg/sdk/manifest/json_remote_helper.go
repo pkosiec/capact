@@ -2,16 +2,21 @@ package manifest
 
 import (
 	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
+	"context"
 	"fmt"
 	"github.com/pkg/errors"
 )
 
 type Hub interface {
-	CheckTypeRevisionsExist(typeRefs []hubpublicgraphql.TypeReference) (map[hubpublicgraphql.TypeReference]bool, error)
+	CheckManifestRevisionsExist(ctx context.Context, manifestRefs []hubpublicgraphql.ManifestReference) (map[hubpublicgraphql.ManifestReference]bool, error)
 }
 
-func checkTypeRevisionsExist(hub Hub, typeRefsToCheck []hubpublicgraphql.TypeReference) (ValidationResult, error) {
-	res, err := hub.CheckTypeRevisionsExist(typeRefsToCheck)
+func checkManifestRevisionsExist(ctx context.Context, hub Hub, manifestRefsToCheck []hubpublicgraphql.ManifestReference) (ValidationResult, error) {
+	if len(manifestRefsToCheck) == 0 {
+		return ValidationResult{}, nil
+	}
+
+	res, err := hub.CheckManifestRevisionsExist(ctx, manifestRefsToCheck)
 	if err != nil {
 		return ValidationResult{}, errors.Wrap(err, "while checking if Type revisions exist")
 	}

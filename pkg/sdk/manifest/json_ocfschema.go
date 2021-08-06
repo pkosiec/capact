@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"context"
 	"fmt"
 	"github.com/iancoleman/strcase"
 	"github.com/pkg/errors"
@@ -34,7 +35,7 @@ func NewOCFSchemaValidator(fs http.FileSystem, schemaRootPath string) *OCFSchema
 }
 
 // Do validates a manifest.
-func (v *OCFSchemaValidator) Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
+func (v *OCFSchemaValidator) Do(_ context.Context, metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	schema, err := v.getManifestSchema(metadata)
 	if err != nil {
 		return newValidationResult(), errors.Wrap(err, "while getting manifest JSON schema")

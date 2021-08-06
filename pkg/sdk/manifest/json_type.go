@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/pkg/errors"
@@ -14,7 +15,7 @@ func NewTypeValidator() *TypeValidator {
 	return &TypeValidator{}
 }
 
-func (v *TypeValidator) Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
+func (v *TypeValidator) Do(_ context.Context, _ types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	var typeEntity types.Type
 	err := json.Unmarshal(jsonBytes, &typeEntity)
 	if err != nil {

@@ -21,7 +21,7 @@ type Hub interface {
 	CreateTypeInstances(ctx context.Context, in *gqllocalapi.CreateTypeInstancesInput) ([]gqllocalapi.CreateTypeInstanceOutput, error)
 	UpdateTypeInstances(ctx context.Context, in []gqllocalapi.UpdateTypeInstancesInput) ([]gqllocalapi.TypeInstance, error)
 	DeleteTypeInstance(ctx context.Context, id string) error
-	CheckTypeRevisionsExist(typeRefs []gqlpublicapi.TypeReference) (map[gqlpublicapi.TypeReference]bool, error)
+	CheckManifestRevisionsExist(ctx context.Context, manifestRefs []gqlpublicapi.ManifestReference) (map[gqlpublicapi.ManifestReference]bool, error)
 }
 
 // NewHub returns client for Capact Hub configured with saved credentials for a given server URL.

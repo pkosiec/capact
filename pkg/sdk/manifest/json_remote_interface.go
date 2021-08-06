@@ -3,10 +3,10 @@ package manifest
 import (
 	hubpublicgraphql "capact.io/capact/pkg/hub/api/graphql/public"
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"context"
 	"encoding/json"
 	"github.com/pkg/errors"
 )
-
 
 type RemoteInterfaceValidator struct {
 	hub Hub
@@ -18,30 +18,32 @@ func NewRemoteInterfaceValidator(hub Hub) *RemoteInterfaceValidator {
 	}
 }
 
-func (v *RemoteInterfaceValidator) Do(metadata types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
+func (v *RemoteInterfaceValidator) Do(ctx context.Context, _ types.ManifestMetadata, jsonBytes []byte) (ValidationResult, error) {
 	var entity types.Interface
 	err := json.Unmarshal(jsonBytes, &entity)
 	if err != nil {
 		return ValidationResult{}, errors.Wrap(err, "while unmarshalling JSON into Interface type")
 	}
 
-	var typeRefsToCheck []hubpublicgraphql.TypeReference
+	var manifestRefsToCheck []hubpublicgraphql.ManifestReference
 
 	// Input Parameters
-	for _, param := range entity.Spec.Input.Parameters.ParameterMap {
-		if param.TypeRef == nil {
-			continue
-		}
+	if entity.Spec.Input.Parameters != nil {
+		for _, param := range entity.Spec.Input.Parameters.ParameterMap {
+			if param.TypeRef == nil {
+				continue
+			}
 
-		typeRefsToCheck = append(typeRefsToCheck, hubpublicgraphql.TypeReference{
-			Path:     param.TypeRef.Path,
-			Revision: param.TypeRef.Revision,
-		})
+			manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
+				Path:     param.TypeRef.Path,
+				Revision: param.TypeRef.Revision,
+			})
+		}
 	}
 
 	// Input TypeInstances
 	for _, ti := range entity.Spec.Input.TypeInstances {
-		typeRefsToCheck = append(typeRefsToCheck, hubpublicgraphql.TypeReference{
+		manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
 			Path:     ti.TypeRef.Path,
 			Revision: ti.TypeRef.Revision,
 		})
@@ -53,13 +55,13 @@ func (v *RemoteInterfaceValidator) Do(metadata types.ManifestMetadata, jsonBytes
 			continue
 		}
 
-		typeRefsToCheck = append(typeRefsToCheck, hubpublicgraphql.TypeReference{
+		manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
 			Path:     ti.TypeRef.Path,
 			Revision: ti.TypeRef.Revision,
 		})
 	}
 
-	return checkTypeRevisionsExist(v.hub, typeRefsToCheck)
+	return checkManifestRevisionsExist(ctx, v.hub, manifestRefsToCheck)
 }
 
 func (v *RemoteInterfaceValidator) Name() string {

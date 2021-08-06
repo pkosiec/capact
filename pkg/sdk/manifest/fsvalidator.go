@@ -2,6 +2,7 @@ package manifest
 
 import (
 	"capact.io/capact/pkg/sdk/apis/0.0.1/types"
+	"context"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
@@ -14,8 +15,6 @@ type FSValidator struct {
 	commonValidators []JSONValidator
 	kindValidators   map[types.ManifestKind][]JSONValidator
 }
-
-// TODO: Rework constructor
 
 // NewDefaultFilesystemValidator returns a new FSValidator.
 func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string, opts ...ValidatorOption) FileSystemValidator {
@@ -38,7 +37,7 @@ func NewDefaultFilesystemValidator(fs http.FileSystem, ocfSchemaRootPath string,
 }
 
 // Do validates a manifest.
-func (v *FSValidator) Do(path string) (ValidationResult, error) {
+func (v *FSValidator) Do(ctx context.Context, path string) (ValidationResult, error) {
 	yamlBytes, err := ioutil.ReadFile(filepath.Clean(path))
 	if err != nil {
 		return newValidationResult(), err
@@ -58,7 +57,7 @@ func (v *FSValidator) Do(path string) (ValidationResult, error) {
 
 	var validationErrs []error
 	for _, validator := range validators {
-		res, err := validator.Do(metadata, jsonBytes)
+		res, err := validator.Do(ctx, metadata, jsonBytes)
 		if err != nil {
 			validationErrs = append(validationErrs, errors.Wrapf(err, "while running validator %s", validator.Name()))
 		}
