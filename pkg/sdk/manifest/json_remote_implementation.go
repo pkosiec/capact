@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/pkg/errors"
+	"strings"
 )
 
 type RemoteImplementationValidator struct {
@@ -71,10 +72,37 @@ func (v *RemoteImplementationValidator) Do(ctx context.Context, _ types.Manifest
 	}
 
 	// Implements
+	for _, implementsItem := range entity.Spec.Implements {
+		manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
+			Path:     implementsItem.Path,
+			Revision: implementsItem.Revision,
+		})
+	}
 
 	// Requires
+	for requiresKey, requiresValue := range entity.Spec.Requires {
+		var itemsToCheck []types.RequireEntity
+		itemsToCheck = append(itemsToCheck, requiresValue.OneOf...)
+		itemsToCheck = append(itemsToCheck, requiresValue.AllOf...)
+		itemsToCheck = append(itemsToCheck, requiresValue.AnyOf...)
+
+		for _, requiresSubItem := range itemsToCheck {
+			manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
+				Path:     strings.Join([]string{requiresKey, requiresSubItem.Name}, "."),
+				Revision: requiresSubItem.Revision,
+			})
+		}
+	}
 
 	// Imports
+	for _, importsItem := range entity.Spec.Imports {
+		for _, method := range importsItem.Methods {
+			manifestRefsToCheck = append(manifestRefsToCheck, hubpublicgraphql.ManifestReference{
+				Path:     strings.Join([]string{importsItem.InterfaceGroupPath, method.Name}, "."),
+				Revision: method.Revision,
+			})
+		}
+	}
 
 	return checkManifestRevisionsExist(ctx, v.hub, manifestRefsToCheck)
 }
