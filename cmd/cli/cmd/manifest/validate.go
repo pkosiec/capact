@@ -1,4 +1,4 @@
-package cmd
+package manifest
 
 import (
 	"capact.io/capact/internal/cli/validate"
@@ -18,16 +18,16 @@ func NewValidate() *cobra.Command {
 		Short: "Validate OCF manifests",
 		Example: heredoc.WithCLIName(`
 			# Validate interface-group.yaml file with OCF specification in default location
-			<cli> validate ocf-spec/0.0.1/examples/interface-group.yaml
+			<cli> manifest validate ocf-spec/0.0.1/examples/interface-group.yaml
 			
 			# Validate multiple files inside test_manifests directory
-			<cli> validate pkg/cli/test_manifests/*.yaml
+			<cli> manifest validate pkg/cli/test_manifests/*.yaml
 			
 			# Validate interface-group.yaml file with custom OCF specification location 
-			<cli> validate -s my/ocf/spec/directory ocf-spec/0.0.1/examples/interface-group.yaml
+			<cli> manifest validate -s my/ocf/spec/directory ocf-spec/0.0.1/examples/interface-group.yaml
 			
 			# Validate all Hub manifests
-			<cli> validate ./manifests/**/*.yaml`, cli.Name),
+			<cli> manifest validate ./manifests/**/*.yaml`, cli.Name),
 		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			validation, err := validate.New(os.Stdout, opts)

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"capact.io/capact/cmd/cli/cmd/manifest"
 	"log"
 	"strings"
 
@@ -75,7 +76,6 @@ func NewRoot() *cobra.Command {
 	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "", "Path to the YAML config file")
 
 	rootCmd.AddCommand(
-		NewValidate(),
 		NewDocs(),
 		NewLogin(),
 		NewLogout(),
@@ -83,6 +83,7 @@ func NewRoot() *cobra.Command {
 		NewUpgrade(),
 		NewCompletion(),
 		NewVersion(),
+		manifest.NewCmd(),
 		hub.NewCmd(),
 		configcmd.NewCmd(),
 		action.NewCmd(),
