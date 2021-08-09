@@ -10,6 +10,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const defaultMaxConcurrency int = 5
+
 // NewValidate returns a cobra.Command for validating Hub Manifests.
 func NewValidate() *cobra.Command {
 	var opts validate.Options
@@ -43,7 +45,8 @@ func NewValidate() *cobra.Command {
 	flags := cmd.Flags()
 	flags.StringVarP(&opts.SchemaLocation, "schemas", "s", "", "Path to the local directory with OCF JSONSchemas. If not provided, built-in JSONSchemas are used.")
 	flags.BoolVarP(&opts.Verbose, "verbose", "v", false, "Prints more verbose output.")
-	flags.BoolVar(&opts.ServerSide, "enable-remote-checks", false, "Executes additional manifests checks against Capact Hub.")
+	flags.BoolVarP(&opts.ServerSide, "enable-remote-checks", "r", false, "Executes additional manifests checks against Capact Hub.")
+	flags.IntVar(&opts.MaxConcurrency, "concurrency", defaultMaxConcurrency, "Maximum number of concurrent workers.")
 
 	return cmd
 }
