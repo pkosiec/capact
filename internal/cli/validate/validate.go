@@ -3,10 +3,14 @@ package validate
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
 	"io"
+	"os"
+	"os/signal"
 	"strings"
 	"sync"
+	"syscall"
+
+	"github.com/fatih/color"
 
 	"capact.io/capact/internal/cli/client"
 	"capact.io/capact/internal/cli/config"
@@ -78,6 +82,7 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 	}
 
 	return &Validation{
+		// TODO: To improve: make sure the validator can be shared for all workers
 		validatorFn: func() manifest.FileSystemValidator {
 			return manifest.NewDefaultFilesystemValidator(fs, ocfSchemaRootPath, validatorOpts...)
 		},
@@ -90,14 +95,15 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 
 // Run runs validation across all JSON validators.
 func (v *Validation) Run(ctx context.Context, filePaths []string) error {
-	fileNoun := properNounFor("file", len(filePaths))
-
-	fmt.Fprintf(v.writer, "Validating %s...\n", fileNoun)
-
 	var workersCount = v.maxWorkers
 	if len(filePaths) < workersCount {
 		workersCount = len(filePaths)
 	}
+
+	v.printIntroMessage(filePaths, workersCount)
+
+	ctxWithCancel, cancelCtxOnSignalFn := v.makeCancellableContext(ctx)
+	go cancelCtxOnSignalFn()
 
 	jobsCh := make(chan string, len(filePaths))
 	resultsCh := make(chan ValidationResult, len(filePaths))
@@ -106,7 +112,7 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 	for i := 0; i < workersCount; i++ {
 		wg.Add(1)
 		wrker := newWorker(&wg, v.validatorFn())
-		go wrker.Do(ctx, jobsCh, resultsCh)
+		go wrker.Do(ctxWithCancel, jobsCh, resultsCh)
 	}
 
 	for _, filepath := range filePaths {
@@ -119,33 +125,64 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 		close(resultsCh)
 	}()
 
-	var errsNumber int
+	var processedFilesCount, errsCount int
 	for res := range resultsCh {
-		resultErrs := res.Errors
-		if len(resultErrs) > 0 {
-			errsNumber += len(resultErrs)
-			var prefix string
-			if v.verbose {
-				prefix = fmt.Sprintf("%s ", color.RedString("✗"))
-			}
-			fmt.Fprintf(v.writer, "- %s%s\n", prefix, res.Error())
-			continue
-		}
-
-		if v.verbose {
-			fmt.Fprintf(v.writer, "- %s %q\n", color.GreenString("✓"), res.Path)
-		}
+		processedFilesCount++
+		errsCount += len(res.Errors)
+		v.printPartialResult(res)
 	}
 
-	fmt.Fprintf(v.writer, "Validated %d %s in total.\n", len(filePaths), fileNoun)
+	return v.outputResultSummary(processedFilesCount, errsCount)
+}
 
-	if errsNumber > 0 {
-		errNoun := properNounFor("error", errsNumber)
-		return fmt.Errorf("detected %d validation %s", errsNumber, errNoun)
+func (v *Validation) makeCancellableContext(ctx context.Context) (context.Context, func()) {
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
+
+	ctxWithCancel, cancelFn := context.WithCancel(ctx)
+
+	return ctxWithCancel, func() {
+		select {
+		case <-sigCh:
+			cancelFn()
+		case <-ctx.Done():
+		}
+	}
+}
+
+func (v *Validation) printIntroMessage(filePaths []string, workersCount int) {
+	fileNoun := properNounFor("file", len(filePaths))
+	fmt.Fprintf(v.writer, "Validating %s in %d concurrent %s...\n", fileNoun, workersCount, properNounFor("job", workersCount))
+}
+
+func (v *Validation) outputResultSummary(processedFilesCount int, errsCount int) error {
+	fileNoun := properNounFor("file", processedFilesCount)
+	fmt.Fprintf(v.writer, "\nValidated %d %s in total.\n", processedFilesCount, fileNoun)
+
+	if errsCount > 0 {
+		errNoun := properNounFor("error", errsCount)
+		return fmt.Errorf("detected %d validation %s", errsCount, errNoun)
 	}
 
 	fmt.Fprintf(v.writer, "🚀 No errors detected.\n")
 	return nil
+}
+
+func (v *Validation) printPartialResult(res ValidationResult) {
+	if !res.IsSuccess() {
+		var prefix string
+		if v.verbose {
+			prefix = fmt.Sprintf("%s ", color.RedString("✗"))
+		}
+		fmt.Fprintf(v.writer, "- %s%s\n", prefix, res.Error())
+		return
+	}
+
+	// Print successes only in verbose mode
+	if !v.verbose {
+		return
+	}
+	fmt.Fprintf(v.writer, "- %s %q\n", color.GreenString("✓"), res.Path)
 }
 
 type worker struct {
@@ -157,6 +194,7 @@ func newWorker(wg *sync.WaitGroup, validator manifest.FileSystemValidator) *work
 	return &worker{wg: wg, validator: validator}
 }
 
+// Do executes the worker logic.
 func (w *worker) Do(ctx context.Context, jobCh <-chan string, resultCh chan<- ValidationResult) {
 	defer w.wg.Done()
 	for {
