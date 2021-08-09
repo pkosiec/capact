@@ -3,6 +3,7 @@ package validate
 import (
 	"context"
 	"fmt"
+	"github.com/fatih/color"
 	"io"
 	"strings"
 
@@ -17,6 +18,7 @@ import (
 type Options struct {
 	SchemaLocation string
 	ServerSide     bool
+	Verbose        bool
 }
 
 // ValidationError defines a validation error.
@@ -40,6 +42,7 @@ type Validation struct {
 	hubCli    client.Hub
 	validator manifest.FileSystemValidator
 	writer    io.Writer
+	verbose   bool
 }
 
 // New creates new Validation.
@@ -68,6 +71,7 @@ func New(writer io.Writer, opts Options) (*Validation, error) {
 		validator: validator,
 		hubCli:    hubCli,
 		writer:    writer,
+		verbose:   opts.Verbose,
 	}, nil
 }
 
@@ -94,8 +98,16 @@ func (v *Validation) Run(ctx context.Context, filePaths []string) error {
 				Errors: resultErrs,
 			}
 			errs = append(errs, validationErr)
-			fmt.Fprintf(v.writer, "- %s\n", validationErr.Error())
+			var prefix string
+			if v.verbose {
+				prefix = fmt.Sprintf("%s ", color.RedString("✗"))
+			}
+			fmt.Fprintf(v.writer, "- %s%s\n", prefix, validationErr.Error())
 			continue
+		}
+
+		if v.verbose {
+			fmt.Fprintf(v.writer, "- %s %q\n", color.GreenString("✓"), filepath)
 		}
 	}
 
