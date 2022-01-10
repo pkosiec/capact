@@ -1212,11 +1212,7 @@ Once approved, we need to address the following list of items:
 1. Implement these two Type features:
     - [Additional references to parent nodes](https://capact.io/docs/feature/type-features/#additional-references-to-parent-nodes)
     - [Find Types based on prefix of parent nodes](https://capact.io/docs/feature/type-features#find-types-based-on-prefix-of-parent-nodes)
-1. [Add TypeInstance `alias` metadata field](https://github.com/capactio/capact/issues/579)
-    - Optional until we want to implement the [dynamic TypeInstance projections(#dynamic-typeinstance-projections) according to the proposal
 1. [Validate TypeInstance input](https://github.com/capactio/capact/issues/544)
-1. Implement [User authentication and authorization](https://github.com/capactio/capact/issues/508)
-    - Optional - needed only if we want to restrict Hub content access
 1. Extend TypeInstance with the `TypeInstance.spec.backend` field
 1. Rewrite Local Hub to Go
     - Make Local Hub to use PostgreSQL
@@ -1242,4 +1238,11 @@ Once approved, we need to address the following list of items:
     - Type features
 1. Runners
     - Remove `output.goTemplate`
-    - Stop supporting usage of funcs from `_helpers.tpl` in case of Helm runner
+    - Stop supporting usage of helper functions from `_helpers.tpl` in case of Helm runner
+
+## Related tasks
+
+1. [Add TypeInstance `alias` metadata field](https://github.com/capactio/capact/issues/579)
+    - Optional until we want to implement the [dynamic TypeInstance projections](#dynamic-typeinstance-projections) according to the proposal
+1. Implement [User authentication and authorization](https://github.com/capactio/capact/issues/508)
+    - Optional - needed only if we want to restrict Hub content access
