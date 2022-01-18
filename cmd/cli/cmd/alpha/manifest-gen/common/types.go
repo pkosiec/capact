@@ -11,7 +11,7 @@ type ManifestGenOptions struct {
 	InterfacePath  string
 	ManifestsType  []string
 	ManifestPath   string
-	Metadata       types.ImplementationMetadata
+	Metadata       types.InterfaceMetadata
 	Overwrite      bool
 	Revision       string
 	TypeInputPath  string

@@ -36,8 +36,8 @@ func NewAttribute() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			attributeCfg.ManifestPath = args[0]
-			attributeCfg.ManifestMetadata = common.GetDefaultMetadata()
+			attributeCfg.ManifestRef.Path = args[0]
+			attributeCfg.ManifestMetadata = common.GetDefaultAttributeMetadata()
 
 			manifests, err := manifestgen.GenerateAttributeTemplatingConfig(&attributeCfg)
 			if err != nil {
@@ -62,7 +62,7 @@ func NewAttribute() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&attributeCfg.ManifestRevision, "revision", "r", "0.1.0", "Revision of the Attribute manifest")
+	cmd.Flags().StringVarP(&attributeCfg.ManifestRef.Revision, "revision", "r", "0.1.0", "Revision of the Attribute manifest")
 
 	return cmd
 }

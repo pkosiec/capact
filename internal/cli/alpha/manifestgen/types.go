@@ -16,19 +16,20 @@ type ManifestCollection map[ManifestPath]ManifestContent
 
 // Config stores generic input parameters for content generation.
 type Config struct {
-	ManifestPath     string
-	ManifestRevision string
-	ManifestMetadata types.ImplementationMetadata
+	ManifestRef types.ManifestRef
 }
 
 // AttributeConfig stores input parameters for Attribute content generation.
 type AttributeConfig struct {
 	Config
+	// TODO: Unfortunately generated Attribute type refer to InterfaceMetadata. That should be fixed in the `types` package.
+	ManifestMetadata types.InterfaceMetadata
 }
 
 // InterfaceConfig stores input parameters for Interface content generation.
 type InterfaceConfig struct {
 	Config
+	ManifestMetadata       types.InterfaceMetadata
 	InputPathWithRevision  string
 	OutputPathWithRevision string
 }
@@ -36,8 +37,11 @@ type InterfaceConfig struct {
 // ImplementationConfig stores input parameters for Implementation content generation.
 type ImplementationConfig struct {
 	Config
+	ManifestMetadata          types.ImplementationMetadata
 	InterfacePathWithRevision string
 }
+
+// TODO: Why is there no InterfaceGroup config? Same with Type config :thinking:
 
 // TerraformConfig stores input parameters for Terraform-based Implementation content generation.
 type TerraformConfig struct {
