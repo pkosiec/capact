@@ -30,6 +30,7 @@ type Download struct {
 
 // DownloadTypeInstanceData represents the TypeInstance data to download.
 type DownloadTypeInstanceData struct {
+	ID      string      `json:"id"`
 	Value   interface{} `json:"value"`
 	Backend *Backend    `json:"backend,omitempty"`
 }
@@ -61,6 +62,7 @@ func (d *Download) Do(ctx context.Context) error {
 		}
 
 		typeInstanceData := DownloadTypeInstanceData{
+			ID:    typeInstance.ID,
 			Value: typeInstance.LatestResourceVersion.Spec.Value,
 		}
 
